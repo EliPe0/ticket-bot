@@ -27,6 +27,38 @@ module.exports = {
                 }, null, 2));
                 await interaction.reply({ content: '✅ | Configurações salvas com sucesso!', flags: discord.MessageFlags.Ephemeral });
             }
-        }
-     }
+        } else if (interaction.isButton()) {
+            if (interaction.customId === 'create-ticket') {
+                const config = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'config', 'config.json')));
+                const category = await interaction.guild.channels.fetch(config.categoryChannelId);
+                const supportRole = await interaction.guild.roles.fetch(config.supportRoleId);
+                const channelName = `ticket-${interaction.user.username.toLowerCase()}-${interaction.user.discriminator}`;
+                const ticketChannel = await interaction.guild.channels.create({
+                    name: channelName,
+                    type: discord.ChannelType.GuildText,
+                    parent: category,
+                    permissionOverwrites: [
+                        {
+                            id: interaction.guild.roles.everyone,
+                            deny: [discord.PermissionsBitField.Flags.ViewChannel],
+                        },
+                        {
+                            id: interaction.user.id,
+                            allow: [discord.PermissionsBitField.Flags.ViewChannel, discord.PermissionsBitField.Flags.SendMessages],
+                        },
+                        {   
+                            id: supportRole.id,
+                            allow: [discord.PermissionsBitField.Flags.ViewChannel, discord.PermissionsBitField.Flags.SendMessages],
+                        },
+                    ],
+                });
+                const embed = new discord.EmbedBuilder()
+                    .setTitle('🎟️ | Suporte')
+                    .setDescription('Obrigado por entrar em contato com o suporte! Em breve, um membro da nossa equipe irá te ajudar.')
+                    .setColor(discord.Colors.Green);
+                await ticketChannel.send({ content: `${interaction.user}, seja bem-vindo ao seu ticket de suporte!`, embeds: [embed] });
+                await interaction.reply({ content: `✅ | Seu ticket foi criado: ${ticketChannel}`, flags: discord.MessageFlags.Ephemeral });
+            }
+        }  
+    }   
 };
