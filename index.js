@@ -35,3 +35,4 @@ client.once('clientReady', () => {
 });
 
 client.login(process.env.TOKEN);
+require('./src/config/deploy-commands');
