@@ -56,9 +56,23 @@ module.exports = {
                     .setTitle('🎟️ | Suporte')
                     .setDescription('Obrigado por entrar em contato com o suporte! Em breve, um membro da nossa equipe irá te ajudar.')
                     .setColor(discord.Colors.Green);
-                await ticketChannel.send({ content: `${interaction.user}, seja bem-vindo ao seu ticket de suporte!`, embeds: [embed] });
+
+                const closeButton = new discord.ButtonBuilder()
+                    .setCustomId('close-ticket')
+                    .setLabel('Fechar Ticket')
+                    .setEmoji('🔒')
+                    .setStyle(discord.ButtonStyle.Danger);
+                const row = new discord.ActionRowBuilder().addComponents(closeButton);
+
+                await ticketChannel.send({ content: `${interaction.user}, seja bem-vindo ao seu ticket de suporte!`, embeds: [embed], components: [row] });
                 await interaction.reply({ content: `✅ | Seu ticket foi criado: ${ticketChannel}`, flags: discord.MessageFlags.Ephemeral });
+            } else if (interaction.customId === 'close-ticket') {
+
+                interaction.reply({ content: '🔒 | O ticket será fechado em 5 segundos...', flags: discord.MessageFlags.Ephemeral });
+                setTimeout(async () => {
+                    await interaction.channel.delete();
+                }, 5000);
             }
-        }  
+        }
     }   
 };
